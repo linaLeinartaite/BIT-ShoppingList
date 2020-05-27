@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+    xmlns:security="http://www.springframework.org/schema/security"
+    xsi:schemaLocation="
+    
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+"
+>    
+    <context:annotation-config/>
+    <!--cia SVARBU pakeisti i savo source package-->
+    <context:component-scan base-package="lt.bit" />    
+    
+    <!--sitas zemiau nurodo kur yra css folderis  view/.jsp file'ams-->
+<!--    <mvc:resources mapping="/resources/**" location="/resources/"
+                   cache-period="31556926"/>-->
+
+    <mvc:annotation-driven/>
+    <!--cia kad galrtume rasti statinius psl jei nerodo kitu nuo webPages-->
+    <mvc:resources mapping="/**" location="/" />
+
+    <!--!!!cia svarbu pakeist url value="" i savo DB url!!!-->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />        
+        <property name="url" value="jdbc:mysql://localhost:3306/shopsdb?characterEncoding=UTF-8&amp;serverTimezone=UTC" />
+        <property name="username" value="root" />
+        <property name="password" value="root" />
+    </bean>  
+    
+    <!--cia svarbu pakeisti packagesToScan value="" i savo package kur yra Entity klases-->
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="packagesToScan" value="lt.bit.data" />
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+        </property>
+        <property name="jpaProperties">
+            <props>
+                <!--sitas sako kad nuspausdink man visus Obj, kuriuos sugeneruoji:>>-->
+                <prop key="hibernate.show_sql">true</prop>  
+                <prop key="hibernate.formate_sql">true</prop>  
+            </props>
+        </property>
+    </bean> 
+    
+    <!--tranzakciju manager's ir jam reikalingas entityManegerFactory nes ref-->   
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean> 
+    
+    <!--sits zemaiu iskrapsto kazka ir rodo  tik hibernato exaptiona-->   
+    <bean id="persistenceExceptionTranslationPostProcessor" class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />    
+    
+    <!--tai reiskia kad aki mes naudosimes tranzakcijomis-->
+    <tx:annotation-driven />    
+    
+    <!--pakeisti i savo base package=""  (pas mane "lt.bit.dao")-->
+    <jpa:repositories base-package="lt.bit.dao" />    
+   
+</beans>
